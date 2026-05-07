@@ -2,7 +2,7 @@
 
 **Student Name**: [Linah Mohammed Al-Tamimi]  
 **Student ID**: [ 445052202 ]  
-**Date Submitted**: [Submission Date]
+**Date Submitted**: [ May 7 , 2026 ]
 
 ---
 
@@ -451,30 +451,46 @@ In operating systems, the key is the lock or semaphore, while the shared room is
 
 ## Part 6: GitHub Repository Information
 
-**Repository URL**: 
+**Repository URL**: https://github.com/Linah-Mohammed/OS-Assignment3-Linah-Mohammed.git
 
-**Number of commits**: 
+**Number of commits**: 14
 
 **Commit messages**: 
-1. 
-2. 
-3. 
-4. 
+1. change to student ID 445052202
+2. Add synchronization libraries
+3. Add locks and semaphore to shared resources
+4. Protect context switch counter with ReentrantLock
+5. Protect completed process counter with ReentrantLock
+6. Protect total waiting time with ReentrantLock
+7. Protect execution log with ReentrantLock
+8. Add CPU semaphore acquire and release
+9. Add CPU semaphore to runToCompletion
+10. Handle semaphore interruption in run method
+11. answering Part 1: Development Log & Part 2: Technical Questions
+12. answering Part 3: Synchronization Analysis
+13. answering Part 4: Testing and Verification
+14. answering Part 5: Reflection and Learning
+   
+   
+
 
 ---
 
 ## Summary
 
-**Total time spent on assignment**: 
+**Total time spent on assignment**: day
 
 **Key takeaways**: 
-1. 
-2. 
-3. 
+1. Race conditions occur when multiple threads access shared data without synchronization. 
+2. ReentrantLock protects critical sections and shared variables from concurrent access.
+3. Semaphore controls access to limited shared resources such as the simulated CPU.
+
 
 **Most challenging aspect**: 
+The most challenging aspect was correctly implementing the semaphore logic and ensuring that the semaphore permit was always released safely using try-finally blocks.
 
 **What I'm most proud of**: 
+I am most proud that I successfully protected all shared resources, prevented race conditions, and implemented synchronization mechanisms that produced correct and consistent scheduler behavior.
 
 ---
 
