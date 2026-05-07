@@ -179,52 +179,121 @@ The trade-off is that coarse-grained locking provides less concurrency because o
 ### Critical Section #1: Counter Variables
 
 **Which variables**: 
+`contextSwitchCount`, `completedProcessCount`, and `totalWaitingTime`.
 
 **Why they need protection**: 
+They are shared variables updated by multiple threads. Without synchronization, simultaneous updates may cause lost updates and incorrect final statistics.
 
 **Synchronization mechanism used**: 
+`ReentrantLock` using `counterLock`.
 
 **Code snippet**:
 ```java
-// Paste your implementation here
+
+// Lock for shared counter variables
+public static final ReentrantLock counterLock = new ReentrantLock();
+
+public static void incrementContextSwitch() {
+    counterLock.lock();
+    try {
+        contextSwitchCount++;
+    } finally {
+        counterLock.unlock();
+    }
+}
+
+public static void incrementCompletedProcess() {
+    counterLock.lock();
+    try {
+        completedProcessCount++;
+    } finally {
+        counterLock.unlock();
+    }
+}
+
+public static void addWaitingTime(long time) {
+    counterLock.lock();
+    try {
+        totalWaitingTime += time;
+    } finally {
+        counterLock.unlock();
+    }
+}
 ```
 
 **Justification**: 
+The lock ensures mutual exclusion. Only one thread can update the shared counters at a time, which prevents race conditions and keeps the final statistics correct.
 
 ---
 
 ### Critical Section #2: Execution Log
 
 **What resource**: 
+executionLog, which is an ArrayList<String>.
 
-**Why it needs protection**: 
+**Why it needs protection**:
+ArrayList is not thread-safe. Multiple threads adding messages at the same time can cause inconsistent data or runtime exceptions.
 
 **Synchronization mechanism used**: 
+ReentrantLock using logLock.
 
 **Code snippet**:
 ```java
-// Paste your implementation here
+
+// Lock for protecting execution log
+public static final ReentrantLock logLock = new ReentrantLock();
+
+public static void logExecution(String message) {
+    logLock.lock();
+    try {
+        executionLog.add(message);
+    } finally {
+        logLock.unlock();
+    }
+}
 ```
 
 **Justification**: 
+Using a separate lock for the execution log keeps log updates safe and organized without mixing them with counter updates.
 
 ---
 
 ### Critical Section #3: CPU Semaphore
 
 **Purpose of semaphore**: 
+The semaphore controls access to the simulated CPU execution section.
 
 **Number of permits and why**: 
+The semaphore has one permit because it is a binary semaphore. This allows only one process to execute on the simulated CPU at a time.
 
 **Where implemented**: 
+It was implemented in run() and runToCompletion().
 
 **Code snippet**:
 ```java
-// Paste your implementation here
+// Semaphore for controlling CPU access
+public static final Semaphore cpuSemaphore = new Semaphore(1);
+
+boolean permitAcquired = false;
+
+try {
+    SharedResources.cpuSemaphore.acquire();
+    permitAcquired = true;
+
+    // process execution code
+
+} catch (InterruptedException e) {
+    System.out.println(Colors.RED + "\n  ✗ " + name + " was interrupted while waiting for CPU." + Colors.RESET);
+} finally {
+    if (permitAcquired) {
+        SharedResources.cpuSemaphore.release();
+    }
+}
+
 ```
 
 **Effect on program behavior**: 
-
+The semaphore prevents more than one process from entering the CPU execution section at the same time. This makes the simulation safer and closer to a controlled single-CPU execution mode
 ---
 
 ## Part 4: Testing and Verification (2 marks)
