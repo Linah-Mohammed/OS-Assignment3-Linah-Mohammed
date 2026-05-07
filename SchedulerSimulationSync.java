@@ -50,9 +50,18 @@ class SharedResources {
 
     // Method to increment context switch counter
     public static void incrementContextSwitch() {
-        // TODO: Protect this critical section with a lock
-        // RACE CONDITION: Multiple threads might read and write simultaneously!
-        contextSwitchCount++;
+        // Acquire lock before updating shared counter
+        counterLock.lock();
+        try {
+
+            // Critical section for context switch counter
+            contextSwitchCount++;
+
+        } finally {
+
+            // Release lock to prevent deadlock
+            counterLock.unlock();
+        }
     }
 
     // Method to increment completed process counter
