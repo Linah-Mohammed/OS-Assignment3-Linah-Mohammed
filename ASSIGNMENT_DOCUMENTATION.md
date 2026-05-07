@@ -1,7 +1,7 @@
 # Assignment 3 - Complete Documentation
 
-**Student Name**: [Your Full Name]  
-**Student ID**: [Your ID]  
+**Student Name**: [Linah Mohammed Al-Tamimi]  
+**Student ID**: [ 445052202 ]  
 **Date Submitted**: [Submission Date]
 
 ---
@@ -31,68 +31,94 @@
 
 Document your development process with **minimum 3 entries** showing progression:
 
-### Entry 1 - [Date, Time]
+### Entry 1 - [ May 5, 2026, 6:00 PM ]
 **What I implemented**: 
+I launched the Java project in Visual Studio Code, forked and cloned the assignment repository, and looked over the initial code. Additionally, I determined which common resources, such as `contextSwitchCount`, `completedProcessCount`, `totalWaitingTime`, and `executionLog`, needed to be synchronized.
 
 **Challenges encountered**: 
+Because the software comprises multiple methods that update shared data, it was first unclear which parts of the code were crucial.
 
 **How I solved it**: 
+I found every variable that multiple threads may access by tracing the methods inside the `SharedResources` class.
 
 **Testing approach**: 
+I reviewed the program structure and checked where each shared variable was updated.
 
 **Time spent**: 
+1 hour
 
 ---
 
-### Entry 2 - [Date, Time]
+### Entry 2 - [ May 5, 2026, 8:00 PM n]
 **What I implemented**: 
+I included the necessary synchronization imports: `ReentrantLock` and `Semaphore`. The `CounterLock`, `logLock`, and `cpuSemaphore` were then added to the `SharedResources` class.
 
 **Challenges encountered**: 
+I needed to decide whether to use one lock for all counters or separate locks.
 
 **How I solved it**: 
+I used one `ReentrantLock` for the shared counters to keep the solution simple and clear, and I used a separate lock for the execution log because it protects a different type of shared resource.
 
 **Testing approach**: 
+I checked that the imports were placed at the top of the file and that the new objects were declared as `public static final`.
 
 **Time spent**: 
+1 hour
+---
+
+### Entry 3 - [May 6, 2026, 5:30 PM ]
+**What I implemented**: 
+I used `counterLock` to safeguard the shared counter methods. Among these were `incrementContextSwitch()`, `incrementCompletedProcess()`, and `addWaitingTime(long time)`.
+
+**Challenges encountered**: 
+The main challenge was making sure every lock was released correctly after entering the critical section.
+
+**How I solved it**: 
+I used `try-finally` blocks so that `counterLock.unlock()` always runs even if an exception occurs.
+
+**Testing approach**: 
+I checked each method to make sure the lock is acquired before updating the shared variable and released in the `finally` block.
+
+**Time spent**: 
+1.5 hours
+---
+
+### Entry 4 - [ May 6, 2026, 8:00 PM ]
+**What I implemented**: 
+I protected the `executionLog` list using `logLock` inside the `logExecution(String message)` method.
+
+**Challenges encountered**: 
+`ArrayList` is not thread-safe, so concurrent updates could cause incorrect log entries or runtime exceptions.
+
+
+**How I solved it**: 
+I added a separate `ReentrantLock` for the execution log and placed `executionLog.add(message)` inside a locked critical section.
+
+
+**Testing approach**:
+ I reviewed all calls to `SharedResources.logExecution()` and confirmed that all log updates go through the protected method.
+
+**Time spent**: 
+1 hour
 
 ---
 
-### Entry 3 - [Date, Time]
-**What I implemented**: 
+### Entry 5 - [ May 7, 2026, 4:30 PM ]
+**What I implemented**:  
+I added the binary semaphore to control CPU access in both `run()` and `runToCompletion()`. I used `cpuSemaphore.acquire()` before execution and `cpuSemaphore.release()` inside the `finally` block.
 
-**Challenges encountered**: 
+**Challenges encountered**:  
+`acquire()` can throw `InterruptedException`, so I had to handle interruption correctly.
 
-**How I solved it**: 
+**How I solved it**:  
+I added a `catch (InterruptedException e)` block and used a boolean variable called `permitAcquired` to release the semaphore only if the process actually acquired it.
 
-**Testing approach**: 
+**Testing approach**:  
+I ran the program and verified that all processes completed successfully and that the final statistics appeared correctly.
 
-**Time spent**: 
+**Time spent**:  
+4 hours
 
----
-
-### Entry 4 - [Date, Time]
-**What I implemented**: 
-
-**Challenges encountered**: 
-
-**How I solved it**: 
-
-**Testing approach**: 
-
-**Time spent**: 
-
----
-
-### Entry 5 - [Date, Time]
-**What I implemented**: 
-
-**Challenges encountered**: 
-
-**How I solved it**: 
-
-**Testing approach**: 
-
-**Time spent**: 
 
 ---
 
@@ -104,9 +130,11 @@ Document your development process with **minimum 3 entries** showing progression
 - Why is concurrent access a problem?
 - What incorrect behavior could occur?
 
-**Your Answer**:
+**Your Answer**: 
+The shared counter variables, including `contextSwitchCount`, `completedProcessCount`, and `totalWaitingTime`, have a single race condition. Multiple process threads change these variables, and because actions like `contextSwitchCount++` involve reading, changing, and writing the value, they are not atomic. One update may be lost if two threads update the same counter simultaneously, leading to inaccurate final statistics.
 
-[Your answer here - 4-6 sentences with code examples]
+The `executionLog` resource, which is a `ArrayList`, had a second race condition. Because `ArrayList` is not thread-safe, it may become inconsistent or result in a `ConcurrentModificationException` if multiple threads add log messages simultaneously. This can lead to erroneous log sizes, missing log entries, or erratic program performance.
+
 
 ---
 
@@ -114,8 +142,10 @@ Document your development process with **minimum 3 entries** showing progression
 **Q**: Explain the difference between ReentrantLock and Semaphore. Where did you use each in your code and why?
 
 **Your Answer**:
+`ReentrantLock` is used to provide mutual exclusion for a critical section. It allows only one thread at a time to access protected shared data. In my code, I used `counterLock` to protect the shared counters and `logLock` to protect the shared `executionLog`.
 
-[Your answer here - explain your implementation choices]
+A `Semaphore` controls how many threads can access a limited resource at the same time. In my code, I used a binary semaphore called `cpuSemaphore` with one permit. This means only one process can access the simulated CPU execution section at a time. I used `ReentrantLock` for protecting shared variables and `Semaphore` for controlling CPU access.
+
 
 ---
 
@@ -123,8 +153,9 @@ Document your development process with **minimum 3 entries** showing progression
 **Q**: What is deadlock? Explain TWO prevention techniques and what you did to prevent deadlocks in your code.
 
 **Your Answer**:
+When two or more threads are stuck waiting for a resource that another thread is holding, this is known as a deadlock. Always releasing locks and semaphores in a `finally` block is one preventive measure. Every `lock()` in my code has a corresponding `unlock()` inside of `finally`, and every semaphore permit that is obtained is released within of `finally`.
 
-[Your answer here - reference try-finally blocks, lock ordering, etc.]
+Keeping important portions brief and avoiding holding numerous locks needlessly are two more preventative strategies. Only the shared variable updates, like adding a log message or increasing a counter, are contained in the locked areas of my code. This lessens the possibility of deadlock and the amount of time a thread retains a lock.
 
 ---
 
@@ -136,8 +167,10 @@ Document your development process with **minimum 3 entries** showing progression
 - Given that the three counters are independent, which approach provides better concurrency and why?
 
 **Your Answer**:
+For Task 1, I used one lock for the three counter variables. This is a coarse-grained locking approach because the same `counterLock` protects `contextSwitchCount`, `completedProcessCount`, and `totalWaitingTime`. I chose this design because it is simple, easy to understand, and reduces the chance of programming mistakes.
 
-[Your answer here - explain coarse-grained vs fine-grained locking, independence of counters, concurrency implications. Show understanding of when to use each approach. 5-8 sentences expected.]
+The trade-off is that coarse-grained locking provides less concurrency because only one thread can update any of the counters at a time. Fine-grained locking would use a separate lock for each counter, which could allow better concurrency because the counters are independent. However, fine-grained locking makes the code more complex. Since this assignment focuses on correctness and clarity, using one lock for the counters is a reasonable design choice.
+
 
 ---
 
