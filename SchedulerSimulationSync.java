@@ -204,6 +204,10 @@ class Process implements Runnable {
                         Colors.RESET);
             }
             System.out.println();
+        } catch (InterruptedException e) {
+
+            // Handle interruption while acquiring CPU semaphore
+            System.out.println(Colors.RED + "\n  ✗ " + name + " was interrupted while waiting for CPU." + Colors.RESET);
 
         } finally {
             // TODO #4: Release CPU semaphore here
