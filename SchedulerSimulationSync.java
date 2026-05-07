@@ -100,9 +100,19 @@ class SharedResources {
 
     // Method to log execution
     public static void logExecution(String message) {
-        // TODO: Protect this critical section with a lock
-        // RACE CONDITION: ArrayList is not thread-safe!
-        executionLog.add(message);
+        // Acquire lock before updating shared execution log
+        logLock.lock();
+
+        try {
+
+            // Critical section for execution log
+            executionLog.add(message);
+
+        } finally {
+
+            // Release lock to prevent deadlock
+            logLock.unlock();
+        }
     }
 }
 
