@@ -231,7 +231,12 @@ class Process implements Runnable {
 
     public void runToCompletion() {
         // TODO: Similar synchronization needed here
+        // Track whether the CPU permit was acquired
+        boolean permitAcquired = false;
         try {
+            // Acquire CPU semaphore before running the last process
+            SharedResources.cpuSemaphore.acquire();
+            permitAcquired = true;
             System.out.println(Colors.BRIGHT_CYAN + "  ⚡ " + Colors.BOLD + Colors.CYAN + name +
                     Colors.RESET + Colors.BRIGHT_CYAN + " is the last process, running to completion" +
                     Colors.RESET + " [" + remainingTime + "ms]");
@@ -248,6 +253,12 @@ class Process implements Runnable {
             System.out.println();
         } catch (InterruptedException e) {
             System.out.println(Colors.RED + "  ✗ " + name + " was interrupted." + Colors.RESET);
+        } finally {
+
+            // Release CPU semaphore if it was acquired
+            if (permitAcquired) {
+                SharedResources.cpuSemaphore.release();
+            }
         }
     }
 
