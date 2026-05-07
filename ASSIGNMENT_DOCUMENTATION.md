@@ -453,7 +453,7 @@ In operating systems, the key is the lock or semaphore, while the shared room is
 
 **Repository URL**: https://github.com/Linah-Mohammed/OS-Assignment3-Linah-Mohammed.git
 
-**Number of commits**: 14
+**Number of commits**: 15
 
 **Commit messages**: 
 1. change to student ID 445052202
@@ -470,6 +470,7 @@ In operating systems, the key is the lock or semaphore, while the shared room is
 12. answering Part 3: Synchronization Analysis
 13. answering Part 4: Testing and Verification
 14. answering Part 5: Reflection and Learning
+15. summary
    
    
 
