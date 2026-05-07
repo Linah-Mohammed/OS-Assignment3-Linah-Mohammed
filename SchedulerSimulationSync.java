@@ -141,8 +141,12 @@ class Process implements Runnable {
     public void run() {
         // TODO #3: Acquire CPU semaphore before executing
         // This ensures only allowed number of processes run simultaneously
-
+        // Track whether the CPU permit was acquired
+        boolean permitAcquired = false;
         try {
+            // Acquire CPU semaphore before process execution
+            SharedResources.cpuSemaphore.acquire();
+            permitAcquired = true;
             if (startTime == -1) {
                 startTime = System.currentTimeMillis();
             }
@@ -204,6 +208,10 @@ class Process implements Runnable {
         } finally {
             // TODO #4: Release CPU semaphore here
             // Always release in finally block to prevent deadlocks!
+            // Release CPU semaphore if it was acquired
+            if (permitAcquired) {
+                SharedResources.cpuSemaphore.release();
+            }
         }
     }
 
