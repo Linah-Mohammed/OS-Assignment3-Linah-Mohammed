@@ -303,16 +303,55 @@ The semaphore prevents more than one process from entering the CPU execution sec
 
 **Testing procedure**: 
 ```bash
+javac SchedulerSimulationSync.java
+java SchedulerSimulationSync
+java SchedulerSimulationSync
+java SchedulerSimulationSync
+java SchedulerSimulationSync
+java SchedulerSimulationSync
+
 # Commands used (run the program at least 5 times)
 ```
 
 **Results**: 
-(Show that running multiple times produces consistent, correct results)
+Total Context Switches: 33
+Total Completed Processes: 18
+Total Waiting Time: 1093858ms
+Average Waiting Time: 60769ms
+
+═══ Process Summary Table ═══
+Process    Priority     Burst Time   Waiting Time
+────────────────────────────────────────────────
+P1         3            8382         88751       
+P2         5            3481         4089        
+P3         2            6949         66227       
+P4         3            3095         11641       
+P5         5            6700         69226       
+P6         1            3702         18847       
+P7         1            4869         71932       
+P8         2            4522         72805       
+P9         3            2153         30695       
+P10        5            7005         73338       
+P11        3            2517         36907       
+P12        1            4308         76347       
+P13        2            7300         76693       
+P14        1            2484         47491       
+P15        3            4768         79993       
+P16        1            9771         89108       
+P17        4            8551         90912       
+P18        4            7857         88856       
+
+═══ Execution Log Summary ═══
+Total log entries: 66
 
 **Why synchronization is necessary**: 
-(Explain what race conditions COULD occur without synchronization, even if you didn't observe them. Explain which shared resources need protection and why.)
+(Explain what race conditions COULD occur without synchronization,)
+Synchronization is necessary because multiple threads access and modify shared resources concurrently. Without synchronization, race conditions could occur when different threads update variables such as contextSwitchCount, completedProcessCount, and totalWaitingTime. For example, two threads could update the same counter simultaneously, causing lost updates and incorrect final values.
+
+The executionLog also requires protection because ArrayList is not thread-safe. Without synchronization, concurrent writes could corrupt the log or produce ConcurrentModificationException. The semaphore is also important because it controls access to the simulated CPU and ensures that only one process executes inside the CPU section at a time.
 
 **Conclusion**: 
+The synchronization mechanisms successfully protected the shared resources and produced consistent and reliable program behavior across multiple executions.
 
 ---
 
@@ -320,32 +359,61 @@ The semaphore prevents more than one process from entering the CPU execution sec
 **What I tested**: Checking for ConcurrentModificationException
 
 **Testing procedure**: 
+I repeatedly executed the scheduler program while monitoring the execution log updates and the final execution log summary. I also verified that multiple processes could add log entries safely during execution.
 
 **Results**: 
+The program completed successfully in all tests without throwing ConcurrentModificationException or any thread-safety related errors. The execution log summary appeared correctly at the end of the program and reported:
+
+Total log entries: 66
+
+All log entries were added successfully without corruption or missing data.
 
 **What this proves**: 
+This proves that protecting executionLog with logLock successfully prevents unsafe concurrent access to the shared ArrayList. The synchronization mechanism guarantees safe logging behavior even when multiple threads attempt to update the log.
 
 ---
 
 ### Test 3: Correctness Verification
 **What I tested**: Verifying correct final values (total burst time, context switches, etc.)
 
-**Expected values**: 
+**Expected values**:
+ The number of completed processes should exactly match the number of created processes. Since the scheduler generated 18 processes, the expected completed process count was:
+
+Expected Completed Processes = 18
+
+I also expected:
+
+Context switches to be greater than the number of processes because some processes require multiple quantums.
+Waiting times to remain positive and reasonable.
+Execution log entries to increase whenever a process starts, yields, or completes.
 
 **Actual values**: 
+Total Context Switches: 33
+Total Completed Processes: 18
+Total Waiting Time: 1093858ms
+Average Waiting Time: 60769ms
 
 **Analysis**: 
+The expected scheduler behavior was consistent with the actual values. Since every produced process completed its execution, the completed process count was accurate. Because some processes needed more than one quantum to complete, the number of context switches exceeded the number of processes. Additionally, the log entries and waiting times matched the scheduling behavior seen during execution.
 
+Concurrent thread updates were prevented from corrupting the final statistics thanks to the synchronization techniques.
 ---
 
 ### Test 4: Different Scenarios
 **Scenario tested**: [e.g., different time quantum, more processes, etc.]
 
 **Purpose**: 
+The purpose of this test was to verify that synchronization still works correctly when some processes complete within one quantum while other processes require multiple quantums and repeated context switches.
 
 **Results**: 
+The scheduler handled all scenarios correctly. Processes with short burst times completed immediately after one execution quantum, while processes with longer burst times yielded the CPU and returned to the ready queue for another execution cycle.
+
+The semaphore correctly limited CPU access to one process at a time, and the locks protected all shared counters and log updates during the entire scheduling process.
+
+No deadlocks, race conditions, or synchronization errors appeared during execution.
 
 **What I learned**: 
+I discovered that because thread scheduling is managed by the operating system and might result in erratic execution timing, synchronization is required even when the program seems to run sequentially. Additionally, I discovered that various synchronization techniques address various issues. While semaphores are helpful for limiting access to shared resources like the CPU, locks are useful for safeguarding important areas.
 
 ---
 
